@@ -1,5 +1,4 @@
-FROM alpine:latest
-MAINTAINER Hobby
+FROM alpine:3.8
 
 RUN apk add --no-cache \
         alpine-sdk \
@@ -12,9 +11,9 @@ RUN apk add --no-cache \
         openssl-dev \
         jemalloc-dev
 
-RUN NGHTTP2_VERSION='1.38.0' \
-    && git clone --depth 1 --single-branch --branch v${NGHTTP2_VERSION} https://github.com/nghttp2/nghttp2 \
-    && cd nghttp2 \
+RUN git clone --depth 1 --single-branch --branch v1.32.0 https://github.com/nghttp2/nghttp2
+
+RUN cd nghttp2 \
     && autoreconf -i && automake && autoconf && ./configure \
     && make && make install-strip \
     && cd .. && rm -rf nghttp2
