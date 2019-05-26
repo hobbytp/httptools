@@ -1,17 +1,24 @@
 FROM alpine:latest
 MAINTAINER Hobby
-RUN \
- NGHTTP2_VERSION='1.38.0' \
- BUILD_DEPS='wget libc-dev gcc g++ make' \
- RUN_DEPS='ca-certificates libstdc++ openssl-dev libev-dev zlib-dev jansson-dev libxml2-dev' \
- && apk --no-cache add $BUILD_DEPS $RUN_DEPS \
- && cd /tmp \
- && wget -qO- "https://github.com/tatsuhiro-t/nghttp2/releases/download/v${NGHTTP2_VERSION}/nghttp2-${NGHTTP2_VERSION}.tar.gz" | tar -xz \
- && cd /tmp/nghttp2-$NGHTTP2_VERSION \
- && ./configure \
- && make \
- && make install \
- && apk del $BUILD_DEPS \
- && rm -rf /tmp/*
- 
- ENTRYPOINT ["h2load"]
+
+RUN apk add --no-cache \
+        alpine-sdk \
+        libtool \
+        autoconf \
+        automake \
+        libev-dev \
+        zlib-dev \
+        c-ares-dev \
+        openssl-dev \
+        jemalloc-dev
+
+RUN NGHTTP2_VERSION='1.38.0' \
+    && git clone --depth 1 --single-branch --branch v${NGHTTP2_VERSION} https://github.com/nghttp2/nghttp2 \
+    && cd nghttp2 \
+    && autoreconf -i && automake && autoconf && ./configure \
+    && make && make install-strip \
+    && cd .. && rm -rf nghttp2
+
+VOLUME /tmp
+
+ENTRYPOINT ["h2load"]
